@@ -17,14 +17,14 @@ module Mempool_state : sig
       transaction list
     -> unit
 
-  val get_block_votes :
-       t
-    -> int
-    -> ( Block_vote.t list , 'err) Asynchronous_result.t
-
   val get_pending_txs :
        t
     -> string
     -> ( transaction list , 'err) Asynchronous_result.t
+
+  val get_block_votes :
+       t
+    -> int
+    -> ( Block_vote.t list , 'err) Asynchronous_result.t
 
 end
