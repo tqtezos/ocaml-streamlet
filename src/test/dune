@@ -1,0 +1,7 @@
+(executables
+  (names main)
+  (libraries ocaml_streamlet))
+
+;;(alias
+;; (name runtest)
+;; (action (run %{exe:main.exe})))

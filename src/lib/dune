@@ -1,0 +1,16 @@
+(library
+ (name ocaml_streamlet)
+ (public_name ocaml_streamlet)
+ (flags (:standard -safe-string))
+ (preprocess (pps ppx_sexp_conv))
+ (libraries
+    fmt
+    cohttp-lwt-unix
+    lwt.unix
+    cmdliner
+    easy-format
+    dum
+    base
+    genspio
+    ezjsonm
+ ))

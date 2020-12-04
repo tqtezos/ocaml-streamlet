@@ -1,0 +1,25 @@
+opam-version: "2.0"
+version: "dev"
+maintainer: "marklnichols@gmail.com"
+authors: [ "TQ Tezos devteam" ]
+homepage: "https://tqtezos.com/"
+bug-reports: "https://github.com/tqtezos/ocaml-streamlet/issues"
+dev-repo: "https://github.com/tqtezos/ocaml-streamlet"
+license: "MIT"
+depends: [
+  "tezos-tooling" { with-test }
+  "dune" { >= "1.0.1" }
+  "genspio" { = "0.0.2" }
+  "dum"
+  "tezos-stdlib-unix"
+  "lwt"
+  "fmt"
+  "cohttp-lwt-unix"
+  "tezos-base"
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+synopsis:
+    "Experimental library to implement the streamlet protocol in OCaml"
