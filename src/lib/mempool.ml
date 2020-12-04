@@ -20,7 +20,7 @@ module Mempool_state = struct
     Hashtbl.replace state.block_votes vote.Block_vote.epoch new_set
 
 
-  let add_new_txs = assert false
+  let add_new_txs _txs = assert false
 
   let get_pending_txs _state node_id : ( transaction list , 'err) Asynchronous_result.t =
     Lwt_io.printf "Transactions requested from mempool by %s ...\n" node_id
