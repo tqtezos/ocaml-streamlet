@@ -1,7 +1,11 @@
 (library
  (name ocaml_streamlet)
  (public_name ocaml_streamlet)
- (flags (:standard -safe-string))
+ (flags
+  (:standard -safe-string)
+   -open Tezos_base__TzPervasives
+   -open Tezos_shell_services)
+
  (preprocess (pps ppx_sexp_conv))
  (libraries
     fmt
@@ -13,4 +17,9 @@
     base
     genspio
     ezjsonm
- ))
+    tezos-stdlib-unix
+    tezos-crypto
+    tezos-base
+    tezos-protocol-environment
+    tezos-shell-services
+))

@@ -4,7 +4,7 @@ open Streamlet_types
 
 module Mempool_state : sig
   type t =
-    { block_votes: (int, SBV.t) Hashtbl.t
+    { block_votes: (int, SBV.t) Base.Hashtbl.t
     ; pending_txs : transaction list }
 
   val create: t

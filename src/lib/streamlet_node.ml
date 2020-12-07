@@ -124,11 +124,11 @@ module Leader = struct
       { parent_hash
       ; epoch_number
       ; txs } in
-    let hash = Helpers.get_block_hash data in
+    let hash = Utils.get_block_hash data in
     let new_block =
       { data
       ; hash } in
-    let signature = Helpers.sign_block new_block in
+    let signature = Utils.sign_block new_block in
     let proposed =
       { leader_id
       ; block_to_propose = new_block }  in
@@ -160,7 +160,7 @@ end
 let receive_epoch_event (state:Simulation_state.t) my_id epoch_num =
     Lwt_io.(flush stdout)
     >>= fun () ->
-    let leader = Helpers.get_leader_for_epoch state.consensus_state.node_ids epoch_num in
+    let leader = Utils.get_leader_for_epoch state.consensus_state.node_ids epoch_num in
     (if String.equal leader my_id
       then Leader.run_leader state epoch_num my_id
       else run_voter state epoch_num my_id)
