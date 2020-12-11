@@ -1,11 +1,13 @@
 module SS:Set.S with type elt = String.t
 
-open Streamlet_types
+open Transaction
+open Vote
 
 module Mempool_state : sig
   type t =
     { block_votes: (int, SBV.t) Base.Hashtbl.t
-    ; pending_txs : transaction list }
+    ; pending_txs : transaction list
+    ; mutable retrieved_txs_count : int }
 
   val create: t
 

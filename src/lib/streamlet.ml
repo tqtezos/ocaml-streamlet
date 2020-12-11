@@ -1,22 +1,11 @@
 open Lwt
-open Streamlet_types
-
-type node_info =
-  { node_id : string;
-    port: int;
-    node_pk: string;
-  }
-
- type node_paths =
-   { path_to_chain: string }
-
- type node_config =
-   { tbd: int }
+open Streamlet_utils
+open Block
+open Transaction
+open Vote
+open Mempool
 
 let write_block_to_chain _state _block =
-  assert false
-
-let is_block_notarized _state _block =
   assert false
 
 let get_longest_notarized_chain (_node_id: string) =
@@ -105,30 +94,33 @@ let broadcast_vote (state:Simulation_state.t) ~(vote:Block_vote.t) =
   Lwt_io.printf "Adding block vote - epoch: %d, node_id: %s, block_hash: %s, signature: %s\n"
       vote.epoch vote.node_id vote.block_hash vote.signature
   >>= fun () ->
-  return ( Ok (Mempool.Mempool_state.add_block_vote state.mempool_state vote))
+  return ( Ok (Mempool_state.add_block_vote state.mempool_state vote))
 
 module Leader = struct
 
-  let pending_from_mempool (state:Simulation_state.t) node_id = Mempool.Mempool_state.get_pending_txs state.mempool_state node_id
+  let pending_from_mempool (state:Simulation_state.t) node_id =
+    Mempool_state.get_pending_txs state.mempool_state node_id
 
-  let broadcast_new_block (state:Simulation_state.t) leader_id epoch_number txs : ( unit , 'err) Asynchronous_result.t =
-    Lwt_io.printf "%s: broadcasting a new block for epoch %d\n" leader_id epoch_number
+  let broadcast_new_block (_state:Simulation_state.t) leader_id leader_secret epoch txs
+      (*: ( unit , 'err) Asynchronous_result.t *) =
+    Lwt_io.printf "%s: broadcasting a new block for epoch %d\n" leader_id (Epoch.to_int epoch)
     >>= fun () ->
     get_longest_notarized_chain leader_id
     >>= fun res ->
     match res with
     | Error _ -> fail_with "Failed to retrieve the longest chain"
     | Ok longest_block ->
-    let parent_hash = longest_block.hash in
+    let parent_chain_hash = longest_block.chain_hash in
     let data =
-      { parent_hash
-      ; epoch_number
+      { chain_hash = parent_chain_hash
+      ; epoch
+      ; notarizations = []
       ; txs } in
-    let hash = Utils.get_block_hash data in
+    let hash = hash_virtual data in
     let new_block =
       { data
       ; hash } in
-    let signature = Utils.sign_block new_block in
+    let signature = sign_hashed_block new_block in
     let proposed =
       { leader_id
       ; block_to_propose = new_block }  in
@@ -160,7 +152,7 @@ end
 let receive_epoch_event (state:Simulation_state.t) my_id epoch_num =
     Lwt_io.(flush stdout)
     >>= fun () ->
-    let leader = Utils.get_leader_for_epoch state.consensus_state.node_ids epoch_num in
+    let leader = get_leader_for_epoch state.consensus_state.node_ids epoch_num in
     (if String.equal leader my_id
       then Leader.run_leader state epoch_num my_id
       else run_voter state epoch_num my_id)

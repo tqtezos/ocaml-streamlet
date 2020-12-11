@@ -1,8 +1,8 @@
 module Consensus_state : sig
   type t =
-    { node_ids: string list }
+    { nodes: Node.t list }
 
-  val create : node_ids: string list -> t
+  val create : Node.t list -> t
 
   val min_votes : t -> int
 

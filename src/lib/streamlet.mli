@@ -1,28 +1,9 @@
-open Streamlet_types
-
-type node_info =
-  { node_id : string;
-    port: int;
-    node_pk: string;
-  }
-
- type node_paths =
-   { path_to_chain: string }
-
- type node_config =
-   { tbd: int }
+open Block
+open Vote
+open Transaction
 
 val write_block_to_chain :
-     < paths: node_paths
-     ; config: node_config
-     ; .. >
-  -> block
-  -> ( 'ok , 'err) Asynchronous_result.t
-
-val is_block_notarized :
-     < paths: node_paths
-     ; config: node_config
-     ; .. >
+     Simulation_state.t
   -> block
   -> ( 'ok , 'err) Asynchronous_result.t
 
@@ -31,17 +12,12 @@ val get_longest_notarized_chain :
   -> ( block, 'err) Asynchronous_result.t
 
 val is_block_final :
-     < paths: node_paths
-     ; config: node_config
-     ; .. >
+     Simulation_state.t
   -> block
   -> ( 'ok , 'err) Asynchronous_result.t
 
 val receive_new_txs :
-     < paths: node_paths
-     ; config: node_config
-     ; other_voters: node_info list
-     ; .. >
+     Simulation_state.t
   -> unit
   -> ( transaction list , 'err) Asynchronous_result.t
 
@@ -62,7 +38,7 @@ module Leader : sig
   val broadcast_new_block :
      Simulation_state.t
   -> string
-  -> int
+  -> Epoch.t
   -> transaction list
   -> ( unit , 'err) Asynchronous_result.t
 

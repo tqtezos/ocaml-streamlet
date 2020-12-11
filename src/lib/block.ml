@@ -1,19 +1,28 @@
 open Prelude
+open Transaction
 
-type t = {
-  epoch : Epoch.t;
-  value : Value.t;
-  notarizations : Notarization.t list;
-  chain_hash : bytes;
+type block =
+{ parent_hash : bytes
+; epoch: Epoch.t
+; txs: transaction list
+; notarizations : Notarization.t list
+}
+
+type t = block
+
+type hashed_block =
+{ data: block
+; hash: bytes
 }
 
 (* Printing *)
 
 let pp ppf t =
-  Format.fprintf ppf "Block {epoch=%d; value=%a; notarizations=%d, chain_hash=%a}"
+  Format.fprintf ppf "Block {parent_hash=%a; epoch=%d; notarizations=%d, transactions=%d}"
+    Blake2B.pp (Blake2B.of_bytes_exn t.parent_hash)
     (Epoch.to_int t.epoch)
-    Value.pp t.value (List.length t.notarizations)
-    Blake2B.pp (Blake2B.of_bytes_exn t.chain_hash)
+    (List.length t.notarizations)
+    (List.length t.txs)
 
 let pp_opt ppf = function
   | Some block ->
@@ -23,21 +32,25 @@ let pp_opt ppf = function
 
 (* Hashing *)
 
-let hash_bytes bytes_list =
+let hash_bytes_list bytes_list =
   let bytes = Blake2B.hash_bytes ~key:(Bytes.of_string "block") bytes_list in
   Blake2B.to_bytes bytes
 
 (* Hash a virtual block (no chain hash) *)
-let hash_virtual {epoch; value; _} =
-  hash_bytes [ Epoch.hash epoch; Value.hash value ]
+let hash_virtual {epoch; txs; _} =
+  hash_bytes_list [ Epoch.hash epoch; hash_bytes_list (hash_txs txs) ]
 
 (* Hash a regular block *)
-let hash_full {epoch; value; chain_hash; _} =
-  hash_bytes [ Epoch.hash epoch; Value.hash value; chain_hash ]
+let hash_full {data; hash; _} =
+  hash_bytes_list
+    [ data.parent_hash; Epoch.hash data.epoch; Notarization.hash_list data.notarizations
+    ; hash_bytes_list (hash_txs data.txs); hash ]
 
-(* Sign a regular block *)
-let sign secret_key block =
-  Signature.sign ~watermark:Generic_operation secret_key (hash_full block)
+let sign_block secret_key block =
+  Signature.sign ~watermark:Generic_operation secret_key (hash_virtual block)
+
+let sign_hashed_block secret_key hashed_block =
+  Signature.sign ~watermark:Generic_operation secret_key (hash_full hashed_block)
 
 let check_signature public_key block signature =
   Signature.check ~watermark:Generic_operation public_key signature (hash_full block)
@@ -56,11 +69,12 @@ let compare a b =
   in
   Epoch.compare a.epoch b.epoch
   >>-? fun () ->
-  Value.compare a.value b.value
+  Transaction.compare_list a.txs b.txs
   >>-? fun () ->
   compare_notarizations a.notarizations b.notarizations
   >>-? fun () ->
-  Bytes.compare a.chain_hash b.chain_hash
+  Bytes.compare a.parent_hash b.parent_hash
+
 
 let equal_notarizations a b =
   let rec loop a b = match (a, b) with
@@ -78,39 +92,38 @@ let equal_notarizations a b =
   loop n_a n_b
 
 let equal_chain a b =
-  Bytes.equal a.chain_hash b.chain_hash
+  Bytes.equal a.parent_hash b.parent_hash
 
 let equal_chain_opt a b =
   make_equal_opt a b equal_chain
 
 let equal a b =
-  equal_chain a b && equal_notarizations a b && Value.equal a.value b.value
+  equal_chain a b && equal_notarizations a b && Transaction.equal_list a.txs b.txs
 
 let equal_opt a b =
   make_equal_opt a b equal
 
 (* Genesis *)
 
-let genesis () =
+let genesis () : hashed_block =
   let fake_genesis =
-    { epoch = 0l
-    ; value = [ ]
+    { parent_hash = Bytes.create 0
+    ; epoch = 0l
     ; notarizations = [ ]
-    ; chain_hash = Bytes.create 0
-    }
-  in
-  let chain_hash = hash_virtual fake_genesis in
-  { fake_genesis with chain_hash }
+    ; txs = [] } in
+  let parent_hash' = hash_virtual fake_genesis in
+  { data = fake_genesis
+  ; hash = parent_hash' }
 
-let create signatory secret_key epoch chain_hash =
-  let block = { epoch; value = []; notarizations = []; chain_hash } in
-  let signature = sign secret_key block in
-  { block with notarizations = [Notarization.{signatory; signature}] }
+(* let create signatory secret_key epoch parent_hash =
+ *   let block = { parent_hash; epoch; notarizations = []; txs = [] } in
+ *   let signature = sign_block secret_key block in
+ *   { block with notarizations = [Notarization.{signatory; signature}] } *)
 
 (* Notarization *)
 
-let is_notarized t threshold =
-  List.length t.notarizations >= threshold
+let is_notarized state t =
+  List.length t.notarizations >= Baker.Consensus_state.min_votes state
 
 let find_signatory_opt public_key {notarizations; _} =
   List.find_opt (fun Notarization.{signatory; _} ->

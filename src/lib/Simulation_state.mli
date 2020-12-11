@@ -4,5 +4,5 @@ type t =
   ; p2p_state: P2p.P2p_state.t }
 
 val create :
-  node_ids:string list
+     Node.t list
   -> t

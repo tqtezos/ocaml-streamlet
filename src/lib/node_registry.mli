@@ -1,17 +1,15 @@
-open Streamlet_node
-
 val register_node :
-  node_info
+     Node.t
   -> unit
 
 val list_nodes :
-  unit
-  -> node_info list
+     unit
+  -> Node.t list
 
 val from_id :
-  string
-  -> node_info
+     string
+  -> Node.t
 
 val start_network :
-   unit
+     unit
   -> unit

@@ -1,28 +1,23 @@
-open Streamlet_types
+open Block
+open Streamlet_utils
 
-let mk_test_block parent_hash epoch_number txs hash : block =
-  { data =
-      { parent_hash
-      ; epoch_number
-      ; txs }
-  ; hash }
+let mk_test_block parent_hash epoch txs: block =
+  { parent_hash
+  ; epoch
+  ; txs
+  ; notarizations = [] }
 
-let block_0 = mk_test_block "invalid hash TBD" 0 Utils.get_test_txs "block_0_hash_tbd"
+let test_block n chain_hash = mk_test_block chain_hash (Epoch.of_int n) (get_test_txs n)
 
-let block_1 = mk_test_block "block_0_hash_tbd" 1 Utils.get_test_txs "block_1_hash_tbd"
-
-let block_2 = mk_test_block "block_1_hash_tbd" 2 Utils.get_test_txs "block_2_hash_tbd"
-
-let get_test_block  = function
-  | 0 -> block_0
-  | 1 -> block_1
-  | 2 -> block_2
-  | _n -> assert false
-
+let rec get_test_block = function
+  | 0 -> (genesis ()).data
+  | 1 -> test_block 1 (genesis ()).hash
+  | n -> test_block n (hash_virtual (get_test_block (n - 1)))
+(* test blocks with consecutive epocs *)
 
 module P2p_state = struct
   type t =
-    { mutable proposed_blocks : proposed_block list }
+    { mutable proposed_blocks : block list }
 
   let create = { proposed_blocks = [] }
 

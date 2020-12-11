@@ -1,4 +1,4 @@
-open Streamlet_types
+open Block
 
 val get_test_block :
      int
@@ -6,16 +6,16 @@ val get_test_block :
 
 module P2p_state : sig
   type t =
-    { mutable proposed_blocks : proposed_block list }
+    { mutable proposed_blocks : block list }
 
   val create : t
 
   val add_proposed_block :
        t
-    -> proposed_block
+    -> block
     -> unit
 
   val get_proposed_blocks :
        t
-   ->  proposed_block list
+   ->  block list
 end
