@@ -1,0 +1,65 @@
+  val add_block_vote: t -> Block_vote.t -> unit
+-- asynch
+
+
+  val find_block_votes: t -> int -> SBV.t
+
+  val add_new_txs :
+      transaction list
+    -> unit
+
+
+      get_pending_operations:
+  val get_pending_txs(including votes for prev block) :
+       t
+    -> string
+    -> ( transaction list , 'err) Asynchronous_result.t
+
+
+Node
+ * Validator
+ * Distributed DB
+ * Mempool
+
+Baker
+Endorser
+
+
+
+--------------------------------------------------------------------------------
+CONTEXT
+
+--
+subscribe - receive_proposed_blocks
+
+
+
+Distributed DB :
+in Tree:
+
+Validated -- branches
+Notarized 2n/3
+final - head-1 (3 consecutive epochs)
+
+  Baker - Leader
+  val add_proposed_validated_block :
+    -- with prev block's votes
+       t
+    -> block
+    -> unit
+
+  Baker - Voter
+
+  val get_proposed_blocks :
+       t
+   ->  block list
+
+(Add vote is in mempool)
+
+
+
+-- blocks that fail to validate in thr
+
+val get_longest_notarized_chain :
+
+val get_longest_final_chain :

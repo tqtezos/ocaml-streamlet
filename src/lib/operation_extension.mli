@@ -1,15 +1,7 @@
-type operation_data = {
-  contents : Operation_kind.t;
-  signature : Signature.t option;
-}
-
-type operation = {
-  shell : Operation.shell_header;
-  protocol_data : operation_data;
-}
+type operation_data = {contents: Operation_kind.t; signature: Signature.t option}
+type operation = {shell: Operation.shell_header; protocol_data: operation_data}
 
 val verify_signature :
-     Signature.Public_key.t
-  -> Bytes.t
-  -> Signature.t option
-  -> unit Lwt.t
+  Signature.Public_key.t -> Bytes.t -> Signature.t option -> unit Lwt.t
+
+val filter_by_kind : Operation_kind.t -> operation list -> operation list

@@ -1,8 +1,6 @@
 type t =
-  { consensus_state : Baker.Consensus_state.t
-  ; mempool_state : Mempool.Mempool_state.t
-  ; p2p_state: P2p.P2p_state.t }
+  { consensus_state: Baker.Consensus_state.t
+  ; mempool_state: Streamlet_mempool.Mempool_state.t
+  ; db_state: Distributed_db.Db_state.t }
 
-val create :
-     Node.t list
-  -> t
+val create : Node_info.t list -> t

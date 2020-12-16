@@ -1,22 +1,19 @@
-open Transaction
+let get_leader_for_epoch nodes epoch =
+  let n = List.length nodes in
+  let idx = Epoch.to_int epoch mod n in
+  List.nth nodes idx
 
-let get_leader_for_epoch node_ids epoch =
-  let n = List.length node_ids in
-  let idx = epoch mod n in
-  List.nth node_ids idx
+let fold_i n ~init ~f =
+  let rec loop n acc =
+    match n with n when n <= 0 -> acc | n -> f n (loop (n - 1) acc) in
+  loop n init
 
-let get_test_txs n : transaction list =
-  [ { source = "not imnplemented"
-    ; destination = "not imnplemented"
-    ; amount = 10 * n
-    ; fee = 10.
-    ; counter = 1
-    ; gas_limit = 100000
-    ; storage_limit = 10000 }
-  ; { source = "not imnplemented"
-    ; destination = "not imnplemented"
-    ; amount = 20 * n
-    ; fee = 20.
-    ; counter = 1
-    ; gas_limit = 200000
-    ; storage_limit = 20000 } ]
+let generate_keys n =
+  let f (_n : int) arg =
+    let _, pk, sk = Signature.generate_key () in
+    (pk, sk) :: arg in
+  fold_i n ~init:[] ~f
+
+let hash_bytes_list bytes_list =
+  let bytes = Blake2B.hash_bytes ~key:(Bytes.of_string "block") bytes_list in
+  Blake2B.to_bytes bytes

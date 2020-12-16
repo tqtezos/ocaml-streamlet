@@ -1,10 +1,13 @@
-type t =
-  { consensus_state : Baker.Consensus_state.t
-  ; mempool_state : Mempool.Mempool_state.t
-  ; p2p_state: P2p.P2p_state.t }
+open Baker
+open Distributed_db
+open Streamlet_mempool
 
+type t =
+  { consensus_state: Consensus_state.t
+  ; mempool_state: Mempool_state.t
+  ; db_state: Db_state.t }
 
 let create nodes =
-  { consensus_state = Baker.Consensus_state.create nodes
-  ; mempool_state = Mempool.Mempool_state.create
-  ; p2p_state = P2p.P2p_state.create }
+  { consensus_state= Consensus_state.create nodes
+  ; mempool_state= Mempool_state.create
+  ; db_state= Db_state.create }

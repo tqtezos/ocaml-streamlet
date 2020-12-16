@@ -1,10 +1,9 @@
 module Block_vote = struct
   type block_vote =
-  { epoch: int
-  ; node_id: string
-  ; block_hash: string
-  ; signature: string
-  }
+    { epoch: Epoch.t
+    ; node_id: string
+    ; block_hash: bytes
+    ; signature: Tezos_crypto.Signature.t }
 
   type t = block_vote
 
@@ -19,4 +18,4 @@ module Block_vote = struct
     else sig_c
 end
 
-module SBV = Set.Make(Block_vote)
+module SBV = Set.Make (Block_vote)

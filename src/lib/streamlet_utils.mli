@@ -1,8 +1,9 @@
-open Transaction
+val get_leader_for_epoch : Node_info.t list -> Epoch.t -> Node_info.t
+val fold_i : int -> init:'accum -> f:(int -> 'accum -> 'accum) -> 'accum
 
-val get_leader_for_epoch :
-     string list
-  -> int
-  -> string
+val generate_keys :
+     int
+  -> (Tezos_crypto.Signature.public_key * Tezos_crypto.Signature.secret_key)
+     list
 
-val get_test_txs : int -> transaction list
+val hash_bytes_list : bytes list -> bytes
